@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ポケモン ガシャポン</title>
+    
+    <!-- Google Analytics (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PQKF36CZLY"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-PQKF36CZLY');
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <!-- Open Graph Meta Tags (OGP) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://pythonddd.github.io/pokemon/">
+    <meta property="og:title" content="ポケモン ガシャポン">
+    <meta property="og:description" content="【カプセルの中に広がる無限の出会い。運命のハンドルを回して、まだ見ぬポケモンたちを捕まえよう！】 PokeAPIから本物のポケモンデータを引き出し、ランダムでポケモンをゲット。何度でも永久無料で回せます。">
+    <meta property="og:image" content="https://pythonddd.github.io/pokemon/ogp.png">
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://pythonddd.github.io/pokemon/">
+    <meta name="twitter:title" content="ポケモン ガシャポン">
+    <meta name="twitter:description" content="【カプセルの中に広がる無限の出会い。運命のハンドルを回して、まだ見ぬポケモンたちを捕まえよう！】 PokeAPIから本物のポケモンデータを引き出し、ランダムでポケモンをゲット。何度でも永久無料で回せます。">
+    <meta name="twitter:image" content="https://pythonddd.github.io/pokemon/ogp.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+Rounded+1c:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(180deg, #ef4444 0%, #ef4444 40%, #1e293b 40%, #1e293b 42%, #f8fafc 42%, #f8fafc 100%);
+            background-attachment: fixed;
+        }
+        .font-pixel {
+            font-family: 'DotGothic16', monospace;
+        }
+        .text-outline {
+            text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff;
+        }
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            20%, 60% { transform: rotate(-10deg); }
+            40%, 80% { transform: rotate(10deg); }
+        }
+        .animate-shake {
+            animation: shake 0.5s ease-in-out infinite;
+        }
+        @keyframes drop {
+            0% { transform: translateY(-70px) scale(0.3) rotate(0deg); opacity: 0; }
+            50% { transform: translateY(5px) scale(1.1) rotate(180deg); opacity: 1; }
+            70% { transform: translateY(-5px) scale(0.95) rotate(270deg); }
+            100% { transform: translateY(0) scale(1) rotate(360deg); opacity: 1; }
+        }
+        .animate-drop {
+            animation: drop 1.0s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes pulse-ball {
+            0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); }
+            50% { box-shadow: 0 0 35px rgba(239, 68, 68, 1); }
+        }
+        .ball-glow {
+            animation: pulse-ball 1.2s infinite;
+        }
+        .fade-transition {
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-out;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .stat-bar-fill {
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-red-500/20">
+
+    <!-- BGM用オーディオ要素 (op.mp3 と battle.mp3 を用意してください) -->
+    <audio id="bgm-op" src="op.mp3" loop></audio>
+    <audio id="bgm-battle" src="battle.mp3" loop></audio>
+
+    <!-- ヘッダー -->
+    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-md border-b-4 border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full border-4 border-slate-800 bg-red-500 relative flex items-center justify-center shadow-inner">
+                    <div class="absolute inset-x-0 h-1 bg-slate-800"></div>
+                    <div class="w-3 h-3 bg-white border-2 border-slate-800 rounded-full z-10"></div>
+                </div>
+                <div>
+                    <h1 id="header-title" class="text-xl sm:text-2xl font-black tracking-tight text-slate-800">
+                        ポケモン ガシャポン
+                    </h1>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <button id="lang-toggle" class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center space-x-1.5 font-bold text-xs border-2 border-slate-300">
+                    <i class="fa-solid fa-globe text-blue-500"></i>
+                    <span id="lang-toggle-text">JP / EN</span>
+                </button>
+                <button id="sound-toggle" class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 transition flex items-center space-x-1 border-2 border-slate-300">
+                    <i id="sound-icon" class="fa-solid fa-volume-high text-red-500"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 items-center justify-center z-10 relative">
+        
+        <!-- 左側：ガシャポン筐体 -->
+        <div class="w-full lg:w-1/2 flex flex-col items-center">
+            <div id="gashapon-machine" class="relative w-72 sm:w-80 bg-red-600 rounded-[2.5rem] p-6 border-8 border-slate-800 shadow-[0_10px_0_0_rgba(15,23,42,1)] flex flex-col items-center transition-all duration-300">
+                
+                <!-- ディスプレイ -->
+                <div class="relative w-full h-48 bg-slate-800 rounded-2xl border-4 border-slate-600 overflow-hidden flex flex-col items-center justify-center shadow-inner group">
+                    <img id="gashapon-interior-img" src="poke.png" alt="" class="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-500 group-hover:scale-105" onerror="this.style.display='none';">
+                    <span id="display-text" class="hidden"></span>
+                </div>
+
+                <!-- 操作パネル -->
+                <div class="w-full bg-slate-100 rounded-2xl p-4 mt-6 border-4 border-slate-800 flex flex-col items-center relative">
+                    <div class="absolute -top-3 px-4 py-1 bg-yellow-400 border-2 border-slate-800 rounded-full text-xs font-black shadow-sm">
+                        <span id="price-badge">FREE PLAY!</span>
+                    </div>
+
+                    <div class="relative w-28 h-28 flex items-center justify-center mt-3">
+                        <div id="crank-handle" class="w-24 h-24 bg-white border-4 border-slate-800 rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-slate-50 active:scale-95 transition-all duration-200">
+                            <div class="w-20 h-6 bg-red-500 rounded-full transform -rotate-45 relative border-2 border-slate-800">
+                                <div class="absolute left-1.5 top-1 w-3 h-3 bg-white/70 rounded-full"></div>
+                                <div class="absolute right-1.5 top-1 w-3 h-3 bg-white/70 rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <span id="twist-handle-label" class="text-xs text-slate-500 font-bold mt-3">TAP TO SPIN</span>
+                </div>
+
+                <!-- 排出口 -->
+                <div class="relative w-full h-24 bg-slate-800 rounded-2xl mt-6 border-4 border-slate-600 shadow-inner overflow-hidden flex justify-center items-center">
+                    <div class="w-24 h-8 bg-black/50 rounded-full blur-md absolute bottom-2"></div>
+                    
+                    <div id="dispensed-capsule" class="absolute hidden w-16 h-16 rounded-full border-4 border-slate-800 shadow-xl cursor-pointer hover:scale-110 active:scale-95 transition-all duration-150 z-20 overflow-hidden flex items-center justify-center bg-white">
+                        <div class="absolute top-0 inset-x-0 h-1/2 bg-red-500 border-b-4 border-slate-800"></div>
+                        <div class="absolute w-5 h-5 bg-white border-4 border-slate-800 rounded-full z-10"></div>
+                        <div class="absolute w-2 h-2 bg-slate-300 rounded-full z-10 animate-ping"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側：コンソール＆説明 -->
+        <div class="w-full lg:w-1/2 space-y-6">
+            <div class="bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-[2rem] border-4 border-slate-800 shadow-[8px_8px_0_0_rgba(15,23,42,0.1)] space-y-6 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-slate-100 rounded-full -mr-10 -mt-10 opacity-50 pointer-events-none"></div>
+                
+                <div class="space-y-3 relative z-10">
+                    <h2 id="main-heading" class="text-2xl sm:text-3xl font-black tracking-tight text-slate-800 leading-tight">
+                        ポケモン ガシャポン
+                    </h2>
+                    <p id="main-desc" class="text-sm text-slate-600 leading-relaxed font-bold">
+                        <!-- JSで動的に書き換えられます -->
+                    </p>
+                </div>
+
+                <!-- 地方選択 -->
+                <div class="p-4 bg-blue-50 rounded-2xl border-2 border-blue-200 space-y-3 relative z-10">
+                    <label id="label-mode" class="text-xs font-black text-blue-800 block"><i class="fa-solid fa-map-location-dot mr-1 text-blue-500"></i>SELECT REGION</label>
+                    <select id="select-mode" class="w-full bg-white border-2 border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-800 font-bold focus:outline-none focus:border-blue-500 shadow-sm cursor-pointer transition-colors appearance-none relative">
+                    </select>
+                </div>
+
+                <button id="btn-play" class="w-full bg-red-500 hover:bg-red-600 text-white font-black py-4 px-6 rounded-2xl border-b-4 border-red-700 active:border-b-0 active:translate-y-1 transition-all text-lg tracking-wider flex items-center justify-center space-x-2 relative z-10">
+                    <i class="fa-solid fa-play"></i>
+                    <span id="btn-play-text">ガチャを回す</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 結果表示モーダル -->
+    <div id="prize-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden transition-all duration-300 opacity-0 overflow-y-auto">
+        <div class="min-h-screen px-4 py-8 flex justify-center items-start sm:items-center">
+            <div class="w-full max-w-lg bg-white rounded-[2rem] border-4 border-slate-800 shadow-[0_0_40px_rgba(239,68,68,0.3)] relative flex flex-col overflow-hidden shrink-0">
+                
+                <!-- カードヘッダー -->
+                <div class="bg-red-500 text-white p-4 flex justify-between items-end border-b-4 border-slate-800">
+                    <div>
+                        <div id="prize-rarity" class="font-pixel text-yellow-300 text-sm font-bold tracking-widest">No. ???</div>
+                        <h3 id="prize-name" class="text-2xl font-black text-outline text-slate-800 mt-1">CHECKING...</h3>
+                    </div>
+                    <div id="prize-types" class="flex flex-col gap-1 items-end">
+                        <!-- タイプバッジ -->
+                    </div>
+                </div>
+
+                <!-- カードボディ -->
+                <div class="p-5 sm:p-6 space-y-6 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiNlMmU4ZjAiIGZpbGwtb3BhY2l0eT0iMC40Ii8+PC9zdmc+')]">
+                    
+                    <!-- 画像エリア -->
+                    <div class="relative w-full aspect-square max-h-64 bg-slate-50 rounded-2xl border-2 border-slate-200 shadow-inner flex items-center justify-center overflow-hidden group">
+                        <div id="prize-img-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-white z-10 fade-transition">
+                            <div class="w-12 h-12 bg-red-500 rounded-full border-4 border-slate-800 flex items-center justify-center animate-bounce">
+                                <div class="w-full h-1 bg-slate-800 absolute"></div>
+                                <div class="w-4 h-4 bg-white border-2 border-slate-800 rounded-full z-10"></div>
+                            </div>
+                            <span id="loading-spinner-text" class="font-pixel text-sm font-bold text-slate-500 mt-4 animate-pulse">図鑑データを取得中...</span>
+                        </div>
+                        <!-- 実際の画像 -->
+                        <img id="prize-img" class="w-full h-full object-contain p-4 relative z-0 opacity-0 transform scale-90 fade-transition drop-shadow-xl" src="" alt="Pokemon Art">
+                    </div>
+
+                    <!-- 基本データ群 -->
+                    <div class="grid grid-cols-2 gap-3 text-sm font-bold">
+                        <div class="col-span-2 bg-white p-3 rounded-xl border-2 border-slate-100 shadow-sm flex justify-between items-center">
+                            <span class="text-slate-400" id="label-genus">分類</span>
+                            <span class="text-slate-700 text-base" id="prize-genus-detail">--</span>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border-2 border-slate-100 shadow-sm flex justify-between items-center">
+                            <span class="text-slate-400" id="label-height">高さ</span>
+                            <span class="text-slate-700 text-base" id="prize-height">-- m</span>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border-2 border-slate-100 shadow-sm flex justify-between items-center">
+                            <span class="text-slate-400" id="label-weight">重さ</span>
+                            <span class="text-slate-700 text-base" id="prize-weight">-- kg</span>
+                        </div>
+                    </div>
+
+                    <!-- 図鑑説明文（フレーバーテキスト） -->
+                    <div class="bg-white p-4 rounded-xl border-2 border-slate-100 shadow-sm relative">
+                        <span class="text-slate-700 text-sm font-bold leading-relaxed block text-center" id="prize-flavor-text">...</span>
+                    </div>
+
+                    <!-- 種族値ステータスバー -->
+                    <div class="bg-white p-4 rounded-xl border-2 border-slate-100 shadow-sm space-y-3">
+                        <span class="text-slate-400 text-xs font-bold block mb-2 font-pixel" id="label-stats">種族値</span>
+                        <div id="stats-container" class="space-y-2">
+                            <!-- JSで動的にバーを生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 特性 -->
+                    <div class="bg-white p-3 rounded-xl border-2 border-slate-100 shadow-sm">
+                        <span class="text-slate-400 text-xs font-bold block mb-1" id="label-abilities">特性</span>
+                        <div id="prize-abilities" class="text-slate-700 font-bold text-sm flex flex-wrap gap-2">
+                            <!-- 特性が入る -->
+                        </div>
+                    </div>
+
+                    <!-- アクションボタン -->
+                    <div class="space-y-3 pt-2">
+                        <button id="btn-share-twitter" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl text-center transition flex items-center justify-center space-x-2 border-b-4 border-slate-950 active:border-b-0 active:translate-y-1">
+                            <i class="fa-brands fa-x-twitter text-lg"></i>
+                            <span id="btn-share-twitter-text">Xに投稿する</span>
+                        </button>
+                        
+                        <div class="flex gap-3">
+                            <button id="btn-close-prize" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 px-4 rounded-xl font-bold transition border-2 border-slate-300">
+                                閉じる
+                            </button>
+                            <a id="btn-explorer-link" href="#" target="_blank" rel="noopener noreferrer" class="w-1/2 bg-blue-50 hover:bg-blue-100 text-blue-600 border-2 border-blue-200 py-3 px-4 rounded-xl font-bold transition flex items-center justify-center space-x-1 text-sm">
+                                <i class="fa-solid fa-book-open"></i>
+                                <span id="btn-explorer-link-text">公式図鑑で確認</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STATE = { IDLE: "idle", ROLLING: "rolling", HAS_CAPSULE: "has_capsule", REVEALED: "revealed" };
+        let currentState = STATE.IDLE;
+        let soundEnabled = true;
+        let currentLang = 'jp';
+
+        let lastWonItemImageUrl = "";
+        let lastWonItemName = "";
+
+        // ★ BGM管理変数と要素取得 ★
+        const bgmOp = document.getElementById('bgm-op');
+        const bgmBattle = document.getElementById('bgm-battle');
+        let isOpStarted = false;
+
+        // ブラウザの自動再生対策: 初回クリック時にオープニングBGMを再生
+        document.body.addEventListener('click', () => {
+            if (!isOpStarted && soundEnabled) {
+                bgmOp.volume = 0.2; // 音量調整
+                bgmOp.play().catch(e => console.warn("BGM再生ブロック", e));
+                isOpStarted = true;
+            }
+        }, { once: true });
+
+        // UIテキストの翻訳辞書
+        const TRANSLATIONS = {
+            en: {
+                pageTitle: "Pokémon Gacha",
+                heading: "Pokémon Gacha",
+                desc: "【Infinite encounters unfold within the capsule. Turn the wheel of destiny to catch unseen Pokémon!】<br>Fetching real Pokémon data from PokéAPI, get random Pokémon. You can spin endlessly for completely free.",
+                selectMode: "SELECT REGION", btnPlay: "PLAY GACHA", loading: "LOADING DATA...",
+                lblGenus: "Category", lblHeight: "Height", lblWeight: "Weight", lblAbilities: "Abilities", lblStats: "BASE STATS",
+                shareX: "Share on X", close: "Close", pokedex: "Pokédex",
+                opts: [
+                    {val: "all", text: "🌐 All Regions (1-1025)"},
+                    {val: "kanto", text: "🔴 Kanto (1-151)"}, {val: "johto", text: "🟡 Johto (152-251)"},
+                    {val: "hoenn", text: "🟢 Hoenn (252-386)"}, {val: "sinnoh", text: "⚪ Sinnoh (387-493)"},
+                    {val: "unova", text: "⚫ Unova (494-649)"}, {val: "kalos", text: "🔵 Kalos (650-721)"},
+                    {val: "alola", text: "🌺 Alola (722-809)"}, {val: "galar", text: "🛡️ Galar (810-898)"},
+                    {val: "paldea", text: "🍇 Paldea (906-1025)"}
+                ]
+            },
+            jp: {
+                pageTitle: "ポケモン ガシャポン",
+                heading: "ポケモン ガシャポン",
+                desc: "【カプセルの中に広がる無限の出会い。運命のハンドルを回して、まだ見ぬポケモンたちを捕まえよう！】<br>PokeAPIから本物のポケモンデータを引き出し、ランダムでポケモンをゲット。何度でも永久無料で回せます。",
+                selectMode: "出現する地方を選択", btnPlay: "ガチャを回す", loading: "図鑑データを取得中...",
+                lblGenus: "分類", lblHeight: "高さ", lblWeight: "重さ", lblAbilities: "特性", lblStats: "種族値",
+                shareX: "Xに投稿する", close: "閉じる", pokedex: "公式図鑑で確認",
+                opts: [
+                    {val: "all", text: "🌐 全地方 (1-1025)"},
+                    {val: "kanto", text: "🔴 カントー地方 (1-151)"}, {val: "johto", text: "🟡 ジョウト地方 (152-251)"},
+                    {val: "hoenn", text: "🟢 ホウエン地方 (252-386)"}, {val: "sinnoh", text: "⚪ シンオウ地方 (387-493)"},
+                    {val: "unova", text: "⚫ イッシュ地方 (494-649)"}, {val: "kalos", text: "🔵 カロス地方 (650-721)"},
+                    {val: "alola", text: "🌺 アローラ地方 (722-809)"}, {val: "galar", text: "🛡️ ガラル地方 (810-898)"},
+                    {val: "paldea", text: "🍇 パルデア地方 (906-1025)"}
+                ]
+            }
+        };
+
+        const TYPE_COLORS = {
+            normal: {bg: '#A8A77A', text: '#fff'}, fire: {bg: '#EE8130', text: '#fff'}, water: {bg: '#6390F0', text: '#fff'},
+            electric: {bg: '#F7D02C', text: '#000'}, grass: {bg: '#7AC74C', text: '#000'}, ice: {bg: '#96D9D6', text: '#000'},
+            fighting: {bg: '#C22E28', text: '#fff'}, poison: {bg: '#A33EA1', text: '#fff'}, ground: {bg: '#E2BF65', text: '#000'},
+            flying: {bg: '#A98FF3', text: '#000'}, psychic: {bg: '#F95587', text: '#fff'}, bug: {bg: '#A6B91A', text: '#fff'},
+            rock: {bg: '#B6A136', text: '#fff'}, ghost: {bg: '#735797', text: '#fff'}, dragon: {bg: '#6F35FC', text: '#fff'},
+            dark: {bg: '#705746', text: '#fff'}, steel: {bg: '#B7B7CE', text: '#000'}, fairy: {bg: '#D685AD', text: '#000'}
+        };
+
+        const TYPE_JP = {
+            normal: 'ノーマル', fire: 'ほのお', water: 'みず', electric: 'でんき', grass: 'くさ', ice: 'こおり',
+            fighting: 'かくとう', poison: 'どく', ground: 'じめん', flying: 'ひこう', psychic: 'エスパー', bug: 'むし',
+            rock: 'いわ', ghost: 'ゴースト', dragon: 'ドラゴン', dark: 'あく', steel: 'はがね', fairy: 'フェアリー'
+        };
+
+        const STAT_LABELS = {
+            hp: {en: 'HP', jp: 'HP', color: '#FF5959'},
+            attack: {en: 'Attack', jp: 'こうげき', color: '#F5AC78'},
+            defense: {en: 'Defense', jp: 'ぼうぎょ', color: '#FAE078'},
+            'special-attack': {en: 'Sp.Atk', jp: 'とくこう', color: '#9DB7F5'},
+            'special-defense': {en: 'Sp.Def', jp: 'とくぼう', color: '#A7DB8D'},
+            speed: {en: 'Speed', jp: 'すばやさ', color: '#FA92B2'}
+        };
+
+        function updateLanguage(lang) {
+            currentLang = lang;
+            const t = TRANSLATIONS[lang];
+            
+            document.title = t.pageTitle;
+            document.getElementById('header-title').textContent = t.heading;
+            document.getElementById('main-heading').textContent = t.heading;
+            document.getElementById('main-desc').innerHTML = t.desc;
+            document.getElementById('label-mode').innerHTML = `<i class="fa-solid fa-map-location-dot mr-1 text-blue-500"></i>${t.selectMode}`;
+            document.getElementById('btn-play-text').textContent = t.btnPlay;
+            document.getElementById('loading-spinner-text').textContent = t.loading;
+            
+            document.getElementById('label-genus').textContent = t.lblGenus;
+            document.getElementById('label-height').textContent = t.lblHeight;
+            document.getElementById('label-weight').textContent = t.lblWeight;
+            document.getElementById('label-abilities').textContent = t.lblAbilities;
+            document.getElementById('label-stats').textContent = t.lblStats;
+            
+            document.getElementById('btn-share-twitter-text').textContent = t.shareX;
+            document.getElementById('btn-close-prize').textContent = t.close;
+            document.getElementById('btn-explorer-link-text').textContent = t.pokedex;
+
+            const select = document.getElementById('select-mode');
+            const currentVal = select.value || 'all';
+            select.innerHTML = t.opts.map(o => `<option value="${o.val}">${o.text}</option>`).join('');
+            select.value = currentVal;
+        }
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // ★ ポケモン本物の鳴き声（PokeAPI）を再生し、終了後に戦闘曲を流す ★
+        function playPokemonCry(id) {
+            if (!soundEnabled) return;
+            const cryAudio = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${id}.ogg`);
+            cryAudio.volume = 0.5;
+            
+            // 鳴き声が終了したタイミングで戦闘曲をループ再生開始
+            cryAudio.onended = () => {
+                if (currentState === STATE.REVEALED && soundEnabled) {
+                    bgmBattle.volume = 0.2;
+                    bgmBattle.currentTime = 0;
+                    bgmBattle.play().catch(e => console.warn("戦闘BGM再生エラー", e));
+                }
+            };
+
+            cryAudio.play().catch(e => {
+                console.warn("鳴き声データの再生に失敗しました", e);
+                // エラー時（鳴き声がない等）は、1秒後に戦闘曲を再生
+                setTimeout(() => {
+                    if (currentState === STATE.REVEALED && soundEnabled) {
+                        bgmBattle.volume = 0.2;
+                        bgmBattle.currentTime = 0;
+                        bgmBattle.play().catch(err => console.warn(err));
+                    }
+                }, 1000);
+            });
+        }
+
+        function playAudio(type) {
+            if (!soundEnabled) return;
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
+                    gain.gain.setValueAtTime(0.08, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now); osc.stop(now + 0.05);
+                } else if (type === 'motor') {
+                    osc.type = 'square';
+                    for(let i=0; i<10; i++) {
+                        osc.frequency.setValueAtTime(400, now + i*0.1);
+                        gain.gain.setValueAtTime(0.05, now + i*0.1);
+                        gain.gain.setValueAtTime(0, now + i*0.1 + 0.05);
+                    }
+                    osc.start(now); osc.stop(now + 1.0);
+                } else if (type === 'pop') {
+                    osc.type = 'square'; osc.frequency.setValueAtTime(1200, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                    gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now); osc.stop(now + 0.1);
+                } else if (type === 'success') {
+                    osc.type = 'square';
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    let time = now;
+                    notes.forEach((freq, i) => {
+                        osc.frequency.setValueAtTime(freq, time);
+                        time += (i === notes.length - 1) ? 0.4 : 0.1;
+                    });
+                    gain.gain.setValueAtTime(0.08, now); gain.gain.linearRampToValueAtTime(0, time);
+                    osc.start(now); osc.stop(time);
+                }
+            } catch (e) { console.warn("Audio error: ", e); }
+        }
+
+        // サウンドボタンのオンオフ処理
+        document.getElementById('sound-toggle').addEventListener('click', () => { 
+            soundEnabled = !soundEnabled; 
+            document.getElementById('sound-icon').className = soundEnabled ? "fa-solid fa-volume-high text-red-500" : "fa-solid fa-volume-xmark text-slate-400"; 
+            
+            // BGMの再生/停止を連動させる
+            if (soundEnabled) {
+                if (currentState === STATE.REVEALED) {
+                    bgmBattle.play().catch(e=>{});
+                } else if (isOpStarted) {
+                    bgmOp.play().catch(e=>{});
+                }
+            } else {
+                bgmOp.pause();
+                bgmBattle.pause();
+            }
+        });
+
+        document.getElementById('lang-toggle').addEventListener('click', () => { playAudio('click'); updateLanguage(currentLang === 'en' ? 'jp' : 'en'); });
+        
+        function toggleModal(modal, show) {
+            if (show) { modal.classList.remove('hidden'); setTimeout(() => modal.classList.add('opacity-100'), 10); } 
+            else { modal.classList.remove('opacity-100'); setTimeout(() => modal.classList.add('hidden'), 300); }
+        }
+
+        function playGashaponRotation() {
+            currentState = STATE.ROLLING; playAudio('motor');
+            const machine = document.getElementById('gashapon-machine');
+            machine.classList.add('animate-shake');
+            document.getElementById('crank-handle').style.transform = "rotate(720deg)";
+            document.getElementById('crank-handle').style.transition = "transform 1.2s cubic-bezier(0.25, 1, 0.5, 1)";
+
+            setTimeout(() => {
+                machine.classList.remove('animate-shake'); currentState = STATE.HAS_CAPSULE; playAudio('pop');
+                const cap = document.getElementById('dispensed-capsule');
+                cap.classList.remove('hidden'); cap.classList.add('animate-drop', 'ball-glow');
+                cap.onclick = () => triggerReveal();
+            }, 1200);
+        }
+
+        async function copyImageToClipboard(imgUrl) {
+            try {
+                const response = await fetch(imgUrl, { mode: 'cors' });
+                const blob = await response.blob();
+                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                return true;
+            } catch (err) {
+                try {
+                    const img = new Image(); img.crossOrigin = "anonymous";
+                    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = imgUrl; });
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+                    canvas.getContext('2d').drawImage(img, 0, 0);
+                    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                    return true;
+                } catch (e) { return false; }
+            }
+        }
+
+        async function triggerReveal() {
+            playAudio('click');
+            
+            let targetMode = document.getElementById('select-mode').value;
+            let minId = 1, maxId = 1025;
+            if(targetMode === 'kanto') { minId = 1; maxId = 151; }
+            else if(targetMode === 'johto') { minId = 152; maxId = 251; }
+            else if(targetMode === 'hoenn') { minId = 252; maxId = 386; }
+            else if(targetMode === 'sinnoh') { minId = 387; maxId = 493; }
+            else if(targetMode === 'unova') { minId = 494; maxId = 649; }
+            else if(targetMode === 'kalos') { minId = 650; maxId = 721; }
+            else if(targetMode === 'alola') { minId = 722; maxId = 809; }
+            else if(targetMode === 'galar') { minId = 810; maxId = 898; }
+            else if(targetMode === 'paldea') { minId = 906; maxId = 1025; }
+
+            const targetId = Math.floor(Math.random() * (maxId - minId + 1)) + minId;
+
+            // 初期化
+            document.getElementById('prize-name').textContent = TRANSLATIONS[currentLang].loading;
+            document.getElementById('prize-rarity').textContent = "No. ???";
+            document.getElementById('prize-genus-detail').textContent = "--";
+            document.getElementById('prize-types').innerHTML = "";
+            document.getElementById('prize-height').textContent = "-- m";
+            document.getElementById('prize-weight').textContent = "-- kg";
+            document.getElementById('prize-flavor-text').textContent = "...";
+            document.getElementById('prize-abilities').innerHTML = "";
+            document.getElementById('stats-container').innerHTML = "";
+
+            const pImg = document.getElementById('prize-img');
+            const loader = document.getElementById('prize-img-loader');
+            pImg.classList.remove('opacity-100', 'scale-100'); pImg.classList.add('opacity-0', 'scale-90');
+            loader.classList.remove('hidden', 'opacity-0');
+
+            toggleModal(document.getElementById('prize-modal'), true);
+            currentState = STATE.REVEALED;
+
+            const cap = document.getElementById('dispensed-capsule');
+            cap.classList.add('hidden'); cap.classList.remove('animate-drop', 'ball-glow');
+            document.getElementById('crank-handle').style.transform = "rotate(0deg)";
+            document.getElementById('crank-handle').style.transition = "none";
+
+            try {
+                // PokeAPIからデータ取得
+                const pokeRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${targetId}`);
+                const pokeData = await pokeRes.json();
+                
+                const speciesRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${targetId}`);
+                const speciesData = await speciesRes.json();
+                
+                // 名前
+                let jpNameObj = speciesData.names.find(n => n.language.name === "ja-Hrkt") || speciesData.names.find(n => n.language.name === "ja");
+                let enNameObj = speciesData.names.find(n => n.language.name === "en");
+                let jpName = jpNameObj ? jpNameObj.name : pokeData.name;
+                let enName = enNameObj ? enNameObj.name : pokeData.name;
+                let finalName = currentLang === 'en' ? (enName.charAt(0).toUpperCase() + enName.slice(1)) : jpName;
+                
+                // 分類（Genus）
+                let jpGenusObj = speciesData.genera.find(g => g.language.name === "ja-Hrkt") || speciesData.genera.find(g => g.language.name === "ja");
+                let enGenusObj = speciesData.genera.find(g => g.language.name === "en");
+                let jpGenus = jpGenusObj ? jpGenusObj.genus : "";
+                let enGenus = enGenusObj ? enGenusObj.genus : "";
+                let finalGenus = currentLang === 'en' ? enGenus : jpGenus;
+
+                // 図鑑説明文
+                let flavorText = "";
+                const entries = speciesData.flavor_text_entries;
+                for (let i = entries.length - 1; i >= 0; i--) {
+                    if (currentLang === 'en' && entries[i].language.name === 'en') {
+                        flavorText = entries[i].flavor_text;
+                        break;
+                    } else if (currentLang === 'jp' && (entries[i].language.name === 'ja-Hrkt' || entries[i].language.name === 'ja')) {
+                        flavorText = entries[i].flavor_text;
+                        break;
+                    }
+                }
+                if (!flavorText) flavorText = currentLang === 'en' ? "No data available." : "データがありません。";
+                flavorText = flavorText.replace(/[\n\f\r]/g, ' ');
+
+                // タイプ
+                const typesHtml = pokeData.types.map(t => {
+                    const typeName = t.type.name;
+                    const displayType = currentLang === 'en' ? typeName.toUpperCase() : (TYPE_JP[typeName] || typeName.toUpperCase());
+                    const color = TYPE_COLORS[typeName] || {bg: '#777', text: '#fff'};
+                    return `<span class="px-2 py-0.5 rounded text-[10px] font-bold shadow-sm" style="background-color:${color.bg}; color:${color.text}; border: 1px solid rgba(0,0,0,0.1)">${displayType}</span>`;
+                }).join('');
+
+                // 高さ・重さ
+                const heightM = (pokeData.height / 10).toFixed(1);
+                const weightKg = (pokeData.weight / 10).toFixed(1);
+
+                // 特性
+                const abilitiesHtmlPromises = pokeData.abilities.map(async (a) => {
+                    let abName = a.ability.name.replace('-', ' ');
+                    if (currentLang === 'en') {
+                        abName = abName.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+                        const suffix = a.is_hidden ? ' <span class="text-[10px] text-slate-400 font-normal">(Hidden)</span>' : '';
+                        return `<span class="px-2 py-1 bg-slate-100 rounded-lg text-xs border border-slate-200">${abName}${suffix}</span>`;
+                    } else {
+                        try {
+                            const abRes = await fetch(a.ability.url);
+                            const abData = await abRes.json();
+                            const jpObj = abData.names.find(n => n.language.name === 'ja-Hrkt') || abData.names.find(n => n.language.name === 'ja');
+                            const jpAb = jpObj ? jpObj.name : abName;
+                            const suffix = a.is_hidden ? ' <span class="text-[10px] text-slate-400 font-normal">(夢)</span>' : '';
+                            return `<span class="px-2 py-1 bg-slate-100 rounded-lg text-xs border border-slate-200">${jpAb}${suffix}</span>`;
+                        } catch(e) { 
+                            return `<span class="px-2 py-1 bg-slate-100 rounded-lg text-xs border border-slate-200">${abName}</span>`; 
+                        }
+                    }
+                });
+                const abilitiesHtmlArr = await Promise.all(abilitiesHtmlPromises);
+
+                // 種族値
+                const MAX_STAT = 255;
+                const statsHtml = pokeData.stats.map(s => {
+                    const statKey = s.stat.name;
+                    const val = s.base_stat;
+                    const label = STAT_LABELS[statKey] ? STAT_LABELS[statKey][currentLang] : statKey.toUpperCase();
+                    const color = STAT_LABELS[statKey] ? STAT_LABELS[statKey].color : '#aaa';
+                    const pct = Math.min(100, (val / MAX_STAT) * 100);
+                    return `
+                        <div class="flex items-center text-xs">
+                            <span class="w-16 font-bold text-slate-500">${label}</span>
+                            <span class="w-8 text-right font-pixel font-bold mr-2 text-slate-700">${val}</span>
+                            <div class="flex-grow h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full stat-bar-fill" style="width: 0%; background-color: ${color};" data-width="${pct}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // 画像URL
+                const imgUrl = (pokeData.sprites.other && pokeData.sprites.other["official-artwork"].front_default) 
+                             ? pokeData.sprites.other["official-artwork"].front_default 
+                             : pokeData.sprites.front_default;
+
+                const preloaderImg = new Image();
+                preloaderImg.crossOrigin = "anonymous";
+                
+                const finalizeReveal = () => {
+                    loader.classList.add('opacity-0');
+                    setTimeout(() => loader.classList.add('hidden'), 400); 
+                    
+                    pImg.src = imgUrl;
+                    pImg.classList.remove('opacity-0', 'scale-90'); pImg.classList.add('opacity-100', 'scale-100');
+                    
+                    document.getElementById('prize-name').textContent = finalName;
+                    document.getElementById('prize-genus-detail').textContent = finalGenus || "--";
+                    document.getElementById('prize-rarity').textContent = `No. ${targetId.toString().padStart(4, '0')}`;
+                    document.getElementById('prize-types').innerHTML = typesHtml;
+                    document.getElementById('prize-height').textContent = `${heightM} m`;
+                    document.getElementById('prize-weight').textContent = `${weightKg} kg`;
+                    document.getElementById('prize-flavor-text').textContent = flavorText;
+                    document.getElementById('prize-abilities').innerHTML = abilitiesHtmlArr.join('');
+                    
+                    const statsContainer = document.getElementById('stats-container');
+                    statsContainer.innerHTML = statsHtml;
+                    
+                    setTimeout(() => {
+                        statsContainer.querySelectorAll('.stat-bar-fill').forEach(bar => {
+                            bar.style.width = bar.getAttribute('data-width');
+                        });
+                    }, 50);
+
+                    const officialUrl = currentLang === 'en' ? `https://www.pokemon.com/us/pokedex/${targetId}` : `https://zukan.pokemon.co.jp/detail/${targetId}`;
+                    document.getElementById('btn-explorer-link').href = officialUrl;
+                    
+                    lastWonItemImageUrl = imgUrl; lastWonItemName = finalName;
+
+                    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#ef4444', '#ffffff', '#eab308'] });
+                    
+                    // ★ オープニング曲を一時停止し、ファンファーレ音 → 本物の鳴き声 → 戦闘曲の順に再生 ★
+                    bgmOp.pause();
+                    playAudio('success');
+                    setTimeout(() => {
+                        playPokemonCry(targetId);
+                    }, 600);
+                };
+
+                preloaderImg.onload = finalizeReveal;
+                preloaderImg.onerror = finalizeReveal; 
+                preloaderImg.src = imgUrl; 
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('prize-name').textContent = "ERROR";
+                loader.classList.add('opacity-0'); setTimeout(() => loader.classList.add('hidden'), 500); 
+            }
+        }
+
+        // X シェアボタン
+        document.getElementById('btn-share-twitter').addEventListener('click', async () => {
+            if (!lastWonItemImageUrl || !lastWonItemName) return;
+            const btnTextElement = document.getElementById('btn-share-twitter-text');
+            const originalText = btnTextElement.textContent;
+
+            btnTextElement.textContent = currentLang === 'en' ? "Copying..." : "コピー中...";
+            playAudio('click');
+
+            await copyImageToClipboard(lastWonItemImageUrl);
+            btnTextElement.textContent = originalText;
+
+            const siteUrl = window.location.href;
+            const tweetText = currentLang === 'en' 
+                ? `I caught "${lastWonItemName}" with the Pokémon Gacha! 🔴⚪️\n\nPlay for free:`
+                : `ポケモン ガシャポンで「${lastWonItemName}」をゲットしました！🔴⚪️\n\n無料で遊ぶ：`;
+                
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(siteUrl)}`, '_blank');
+        });
+
+        function handleStartGacha() {
+            if (currentState === STATE.ROLLING || currentState === STATE.HAS_CAPSULE) return;
+            playAudio('click'); playGashaponRotation();
+        }
+
+        document.getElementById('btn-play').addEventListener('click', handleStartGacha);
+        document.getElementById('crank-handle').addEventListener('click', () => { if (currentState === STATE.IDLE) handleStartGacha(); });
+        
+        // ★ 閉じるボタンを押したときの処理 ★
+        document.getElementById('btn-close-prize').addEventListener('click', () => {
+            playAudio('click');
+            toggleModal(document.getElementById('prize-modal'), false);
+            const cap = document.getElementById('dispensed-capsule');
+            cap.classList.add('hidden'); cap.classList.remove('animate-drop', 'ball-glow');
+            lastWonItemImageUrl = ""; lastWonItemName = "";
+            currentState = STATE.IDLE;
+
+            // 戦闘BGMを停止し、オープニングBGMを最初から再開する
+            bgmBattle.pause();
+            bgmBattle.currentTime = 0;
+            if (soundEnabled && isOpStarted) {
+                bgmOp.currentTime = 0; // 曲を最初から流す
+                bgmOp.play().catch(e=>{});
+            }
+        });
+
+        // 起動時
+        updateLanguage('jp');
+    </script>
+</body>
+</html>
