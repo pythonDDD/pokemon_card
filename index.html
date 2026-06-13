@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ポケモン ガシャポン</title>
+    <title>ポケモン ガシャポン サクト＆リツ</title>
     
     <!-- Google Analytics (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-PQKF36CZLY"></script>
@@ -20,15 +20,15 @@
     <!-- Open Graph Meta Tags (OGP) -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://pythonddd.github.io/pokemon/">
-    <meta property="og:title" content="ポケモン ガシャポン">
-    <meta property="og:description" content="【カプセルの中に広がる無限の出会い。運命のハンドルを回して、まだ見ぬポケモンたちを捕まえよう！】 PokeAPIから本物のポケモンデータを引き出し、ランダムでポケモンをゲット。何度でも永久無料で回せます。">
+    <meta property="og:title" content="ポケモン ガシャポン サクト＆リツ">
+    <meta property="og:description" content="【カプセルの中に広がる無限の出会い。運命のハンドルを回して、まだ見ぬポケモンたちを捕まえよう！】 リザードンかピカチュウ、ミュウ、ミュウツーが出てきたら、パパにパンチして良いよ！！">
     <meta property="og:image" content="https://pythonddd.github.io/pokemon/ogp.png">
 
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://pythonddd.github.io/pokemon/">
-    <meta name="twitter:title" content="ポケモン ガシャポン">
-    <meta name="twitter:description" content="【カプセルの中に広がる無限の出会い。運命のハンドルを回して、まだ見ぬポケモンたちを捕まえよう！】 PokeAPIから本物のポケモンデータを引き出し、ランダムでポケモンをゲット。何度でも永久無料で回せます。">
+    <meta name="twitter:title" content="ポケモン ガシャポン サクト＆リツ">
+    <meta name="twitter:description" content="【カプセルの中に広がる無限の出会い。運命のハンドルを回して、まだ見ぬポケモンたちを捕まえよう！】 リザードンかピカチュウ、ミュウ、ミュウツーが出てきたら、パパにパンチして良いよ！！">
     <meta name="twitter:image" content="https://pythonddd.github.io/pokemon/ogp.png">
     
     <!-- Tailwind CSS -->
@@ -105,7 +105,7 @@
                     <div class="w-3 h-3 bg-white border-2 border-slate-800 rounded-full z-10"></div>
                 </div>
                 <div>
-                    <h1 id="header-title" class="text-xl sm:text-2xl font-black tracking-tight text-slate-800">
+                    <h1 id="header-title" class="text-xl sm:text-xl font-black tracking-tight text-slate-800 leading-tight">
                         ポケモン ガシャポン
                     </h1>
                 </div>
@@ -167,15 +167,16 @@
         </div>
 
         <!-- 右側：コンソール＆説明 -->
-        <div class="w-full lg:w-1/2 space-y-6">
+        <div class="w-full lg:w-1/2 space-y-4">
             <div class="bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-[2rem] border-4 border-slate-800 shadow-[8px_8px_0_0_rgba(15,23,42,0.1)] space-y-6 relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-slate-100 rounded-full -mr-10 -mt-10 opacity-50 pointer-events-none"></div>
                 
+                <!-- タイトル＆説明文 -->
                 <div class="space-y-3 relative z-10">
                     <h2 id="main-heading" class="text-2xl sm:text-3xl font-black tracking-tight text-slate-800 leading-tight">
-                        ポケモン ガシャポン
+                        <!-- JSで動的に書き換えられます -->
                     </h2>
-                    <p id="main-desc" class="text-sm text-slate-600 leading-relaxed font-bold">
+                    <p id="main-desc" class="text-sm text-slate-700 leading-relaxed font-bold">
                         <!-- JSで動的に書き換えられます -->
                     </p>
                 </div>
@@ -187,10 +188,21 @@
                     </select>
                 </div>
 
+                <!-- ガチャボタン -->
                 <button id="btn-play" class="w-full bg-red-500 hover:bg-red-600 text-white font-black py-4 px-6 rounded-2xl border-b-4 border-red-700 active:border-b-0 active:translate-y-1 transition-all text-lg tracking-wider flex items-center justify-center space-x-2 relative z-10">
                     <i class="fa-solid fa-play"></i>
                     <span id="btn-play-text">ガチャを回す</span>
                 </button>
+                
+                <!-- 遊び方（使い方） -->
+                <div class="mt-4 bg-yellow-50 p-4 rounded-2xl border-2 border-yellow-200 relative z-10">
+                    <h3 class="text-sm font-black text-yellow-800 mb-2"><i class="fa-solid fa-circle-question mr-1 text-yellow-600"></i><span id="how-to-play-title">あそびかた</span></h3>
+                    <ul class="text-xs text-yellow-900 font-bold space-y-1.5 list-decimal list-inside ml-1">
+                        <li id="how-to-1">出現する地方を選ぼう！</li>
+                        <li id="how-to-2">「ガチャを回す」ボタンか、ハンドルをタップ！</li>
+                        <li id="how-to-3">出てきたカプセルをタップして開けよう！</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </main>
@@ -296,29 +308,32 @@
         let lastWonItemImageUrl = "";
         let lastWonItemName = "";
 
-        // ★ BGM管理変数と要素取得 ★
+        // BGM管理
         const bgmOp = document.getElementById('bgm-op');
         const bgmBattle = document.getElementById('bgm-battle');
         let isOpStarted = false;
 
-        // ブラウザの自動再生対策: 初回クリック時にオープニングBGMを再生
         document.body.addEventListener('click', () => {
             if (!isOpStarted && soundEnabled) {
-                bgmOp.volume = 0.2; // 音量調整
+                bgmOp.volume = 0.2; 
                 bgmOp.play().catch(e => console.warn("BGM再生ブロック", e));
                 isOpStarted = true;
             }
         }, { once: true });
 
-        // UIテキストの翻訳辞書
+        // 翻訳辞書
         const TRANSLATIONS = {
             en: {
-                pageTitle: "Pokémon Gacha",
-                heading: "Pokémon Gacha",
-                desc: "【Infinite encounters unfold within the capsule. Turn the wheel of destiny to catch unseen Pokémon!】<br>Fetching real Pokémon data from PokéAPI, get random Pokémon. You can spin endlessly for completely free.",
+                pageTitle: "Pokémon Gacha Sakuto & Ritsu",
+                heading: "Pokémon Gacha<br><span class='text-xl text-blue-600'>Sakuto & Ritsu</span>",
+                desc: "【Infinite encounters unfold within the capsule. Turn the wheel of destiny to catch unseen Pokémon!】<br><span class='text-red-500'>If you get Charizard, Pikachu, Mew, or Mewtwo, you can punch Dad!!</span>",
                 selectMode: "SELECT REGION", btnPlay: "PLAY GACHA", loading: "LOADING DATA...",
                 lblGenus: "Category", lblHeight: "Height", lblWeight: "Weight", lblAbilities: "Abilities", lblStats: "BASE STATS",
                 shareX: "Share on X", close: "Close", pokedex: "Pokédex",
+                howToPlay: "How to Play",
+                howTo1: "Select a region!",
+                howTo2: "Tap 'PLAY GACHA' or the handle!",
+                howTo3: "Tap the dispensed capsule to open it!",
                 opts: [
                     {val: "all", text: "🌐 All Regions (1-1025)"},
                     {val: "kanto", text: "🔴 Kanto (1-151)"}, {val: "johto", text: "🟡 Johto (152-251)"},
@@ -329,12 +344,16 @@
                 ]
             },
             jp: {
-                pageTitle: "ポケモン ガシャポン",
-                heading: "ポケモン ガシャポン",
-                desc: "【カプセルの中に広がる無限の出会い。運命のハンドルを回して、まだ見ぬポケモンたちを捕まえよう！】<br>PokeAPIから本物のポケモンデータを引き出し、ランダムでポケモンをゲット。何度でも永久無料で回せます。",
+                pageTitle: "ポケモン ガシャポン サクト＆リツ",
+                heading: "ポケモン ガシャポン<br><span class='text-xl text-blue-600'>サクト＆リツ</span>",
+                desc: "【カプセルの中に広がる無限の出会い。運命のハンドルを回して、まだ見ぬポケモンたちを捕まえよう！】<br><span class='text-red-500'>リザードンかピカチュウ、ミュウ、ミュウツーが出てきたら、パパにパンチして良いよ！！</span>",
                 selectMode: "出現する地方を選択", btnPlay: "ガチャを回す", loading: "図鑑データを取得中...",
                 lblGenus: "分類", lblHeight: "高さ", lblWeight: "重さ", lblAbilities: "特性", lblStats: "種族値",
                 shareX: "Xに投稿する", close: "閉じる", pokedex: "公式図鑑で確認",
+                howToPlay: "あそびかた",
+                howTo1: "出現する地方を選ぼう！",
+                howTo2: "「ガチャを回す」ボタンか、ハンドルをタップ！",
+                howTo3: "出てきたカプセルをタップして開けよう！",
                 opts: [
                     {val: "all", text: "🌐 全地方 (1-1025)"},
                     {val: "kanto", text: "🔴 カントー地方 (1-151)"}, {val: "johto", text: "🟡 ジョウト地方 (152-251)"},
@@ -375,9 +394,9 @@
             const t = TRANSLATIONS[lang];
             
             document.title = t.pageTitle;
-            document.getElementById('header-title').textContent = t.heading;
-            document.getElementById('main-heading').textContent = t.heading;
-            document.getElementById('main-desc').innerHTML = t.desc;
+            document.getElementById('header-title').textContent = t.pageTitle; // ヘッダーはタグなしテキストにするため
+            document.getElementById('main-heading').innerHTML = t.heading; // メインタイトルはHTMLタグ対応
+            document.getElementById('main-desc').innerHTML = t.desc; // 改行や赤文字を反映するためにinnerHTMLを使用
             document.getElementById('label-mode').innerHTML = `<i class="fa-solid fa-map-location-dot mr-1 text-blue-500"></i>${t.selectMode}`;
             document.getElementById('btn-play-text').textContent = t.btnPlay;
             document.getElementById('loading-spinner-text').textContent = t.loading;
@@ -392,6 +411,11 @@
             document.getElementById('btn-close-prize').textContent = t.close;
             document.getElementById('btn-explorer-link-text').textContent = t.pokedex;
 
+            document.getElementById('how-to-play-title').textContent = t.howToPlay;
+            document.getElementById('how-to-1').textContent = t.howTo1;
+            document.getElementById('how-to-2').textContent = t.howTo2;
+            document.getElementById('how-to-3').textContent = t.howTo3;
+
             const select = document.getElementById('select-mode');
             const currentVal = select.value || 'all';
             select.innerHTML = t.opts.map(o => `<option value="${o.val}">${o.text}</option>`).join('');
@@ -400,13 +424,11 @@
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
-        // ★ ポケモン本物の鳴き声（PokeAPI）を再生し、終了後に戦闘曲を流す ★
         function playPokemonCry(id) {
             if (!soundEnabled) return;
             const cryAudio = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${id}.ogg`);
             cryAudio.volume = 0.5;
             
-            // 鳴き声が終了したタイミングで戦闘曲をループ再生開始
             cryAudio.onended = () => {
                 if (currentState === STATE.REVEALED && soundEnabled) {
                     bgmBattle.volume = 0.2;
@@ -417,7 +439,6 @@
 
             cryAudio.play().catch(e => {
                 console.warn("鳴き声データの再生に失敗しました", e);
-                // エラー時（鳴き声がない等）は、1秒後に戦闘曲を再生
                 setTimeout(() => {
                     if (currentState === STATE.REVEALED && soundEnabled) {
                         bgmBattle.volume = 0.2;
@@ -465,12 +486,10 @@
             } catch (e) { console.warn("Audio error: ", e); }
         }
 
-        // サウンドボタンのオンオフ処理
         document.getElementById('sound-toggle').addEventListener('click', () => { 
             soundEnabled = !soundEnabled; 
             document.getElementById('sound-icon').className = soundEnabled ? "fa-solid fa-volume-high text-red-500" : "fa-solid fa-volume-xmark text-slate-400"; 
             
-            // BGMの再生/停止を連動させる
             if (soundEnabled) {
                 if (currentState === STATE.REVEALED) {
                     bgmBattle.play().catch(e=>{});
@@ -567,7 +586,6 @@
             document.getElementById('crank-handle').style.transition = "none";
 
             try {
-                // PokeAPIからデータ取得
                 const pokeRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${targetId}`);
                 const pokeData = await pokeRes.json();
                 
@@ -696,7 +714,6 @@
 
                     confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#ef4444', '#ffffff', '#eab308'] });
                     
-                    // ★ オープニング曲を一時停止し、ファンファーレ音 → 本物の鳴き声 → 戦闘曲の順に再生 ★
                     bgmOp.pause();
                     playAudio('success');
                     setTimeout(() => {
@@ -743,7 +760,6 @@
         document.getElementById('btn-play').addEventListener('click', handleStartGacha);
         document.getElementById('crank-handle').addEventListener('click', () => { if (currentState === STATE.IDLE) handleStartGacha(); });
         
-        // ★ 閉じるボタンを押したときの処理 ★
         document.getElementById('btn-close-prize').addEventListener('click', () => {
             playAudio('click');
             toggleModal(document.getElementById('prize-modal'), false);
@@ -752,11 +768,10 @@
             lastWonItemImageUrl = ""; lastWonItemName = "";
             currentState = STATE.IDLE;
 
-            // 戦闘BGMを停止し、オープニングBGMを最初から再開する
             bgmBattle.pause();
             bgmBattle.currentTime = 0;
             if (soundEnabled && isOpStarted) {
-                bgmOp.currentTime = 0; // 曲を最初から流す
+                bgmOp.currentTime = 0;
                 bgmOp.play().catch(e=>{});
             }
         });
